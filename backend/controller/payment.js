@@ -13,7 +13,7 @@ router.post("/", async (req, res) => {
     const {amount}=req.body;
     const paymentIntent=await stripe.paymentIntents.create({
         amount:amount,
-        currency:'INR',
+        currency:'SEK',
         payment_method_types:['card']   
     },
     {
