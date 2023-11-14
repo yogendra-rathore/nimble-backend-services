@@ -196,6 +196,95 @@ router.post(
   })
 );
 
+router.delete('/deleteUser/:userId', async (req, res) => {
+  try {
+      // Extract the userId from the request parameters
+      const _id = req.params.userId;
+
+      // Check if the user with the given ID exists
+      const user = await User.findOne({ _id });
+      if (!user) {
+          return res.status(404).json({ 
+            success: false,
+            message: 'User not found' });
+      }
+
+      otp = Math.random();
+      otp = Math.floor(100000 + Math.random() * 900000);
+      otp = otp.toString();
+      console.log("OTP Generated",otp);
+      otpExpirationTime=new Date(Date.now() + 10 * 60 * 1000);
+    console.log("OTP Activation Time",otpExpirationTime);
+    
+        try {
+          await sendMail({
+            email: user.email,
+            subject: "Delete your nimble account",
+            message: `Hello ${user.name}, Please enter the given OTP to delete your account, valid for 10 Minutes only :\n OTP: ${otp} \n Warm Regards,\n Nimble Support`
+          });
+          res.status(201).json({
+            success: true,
+            message: `please check your email:- ${user.email} to Delete your account!`,
+          });
+        } catch (error) {
+          return next(new ErrorHandler(error.message, 500));
+        }
+
+      // Delete the user
+     
+  } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
-  module.exports=router;
+router.post(
+  "/deleteUser/verfication",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      console.log("OTP Sent To User",otp);
+      
+      const { email,userotp } = req.body;
+      console.log("OTP Received From User for account deletion",userotp);
+      console.log("Expiration Time During Activation",otpExpirationTime);
+      if (otpExpirationTime && otpExpirationTime > new Date()) {
+      if (userotp!=otp) {
+        res.status(400).json({
+          success: false,
+          message: "Entered OTP Is Invalid",
+        });
+      }
+      else{
+        let user = await User.findOne({ email });
+
+        if (!user) {
+          res.status(400).json({
+            success: false,
+            message: "User Not Exist..Try After Registering",
+          });
+        }
+        else{
+          await User.deleteOne({ email });
+          res.status(200).json({
+            success: true,
+            message: "User Deleted Successfull",
+          });
+        }
+      }
+    }
+    else{
+      res.status(400).json({
+        success: false,
+        message: "Entered OTP Is Expired",
+      });
+    }
+
+     
+     
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+module.exports=router;
