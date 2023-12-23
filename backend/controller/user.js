@@ -185,11 +185,12 @@ router.post(
           message: "User doesn't exists!...Please Register",
         });
       }
-
-      res.status(200).json({
-        success: true,
-        user,
-      });
+       else{
+        res.status(200).json({
+          success: true,
+          user,
+        });
+      }
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
     }
