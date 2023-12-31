@@ -18,31 +18,42 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
     try {
       const { name, email, password } = req.body;
       console.log("data from UI",name,email,password);
-      console.log("file",req.file);
       const userEmail = await User.findOne({ email });
   
-      if (userEmail) {
-        // code to handle image also not upload if user already exist
+      // if (userEmail) {
+      //   // code to handle image also not upload if user already exist
+      //   const filename = req.file.filename;
+      //   const filePath = `uploads/${filename}`;
+      //   fs.unlink(filePath, (err) => {
+      //     if (err) {
+      //       console.log(err);
+      //       res.status(500).json({ message: "Error deleting file" });
+      //     }
+      //   });
+      //   return next(new ErrorHandler("User already exists", 400));
+      // }
+      let user=null;
+      if(req.file==null){
+        user = {
+          name: name,
+          email: email,
+          password: password,
+          avatar: 'Avatar Not Uploaded',
+        };
+      }
+      else{
+
         const filename = req.file.filename;
-        const filePath = `uploads/${filename}`;
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.log(err);
-            res.status(500).json({ message: "Error deleting file" });
-          }
-        });
-        return next(new ErrorHandler("User already exists", 400));
+        const fileUrl = path.join(filename);
+        user = {
+          name: name,
+          email: email,
+          password: password,
+          avatar: fileUrl
+        };
       }
   
-      const filename = req.file.filename;
-      const fileUrl = path.join(filename);
   
-      const user = {
-        name: name,
-        email: email,
-        password: password,
-        avatar: fileUrl,
-      };
      otp = Math.random();
     otp = Math.floor(100000 + Math.random() * 900000);
     otp = otp.toString();
@@ -78,6 +89,10 @@ router.post(
       console.log("OTP Sent To User",otp);
       
       const { name, email, password, avatar,address,userotp } = req.body;
+      let defaultAvatar=avatar;
+      if(defaultAvatar==null){
+          defaultAvatar='Avatar Not Uploaded'
+      }
       console.log("OTP Received From User",userotp);
       console.log("Data--",name,email,password,avatar,address);
       console.log("Expiration Time During Activation",otpExpirationTime);
@@ -101,7 +116,7 @@ router.post(
           user = await User.create({
             name,
             email,
-            avatar,
+            defaultAvatar,
             password,
             address
           });
@@ -185,7 +200,7 @@ router.post(
           message: "User doesn't exists!...Please Register",
         });
       }
-       else{
+      else{
         res.status(200).json({
           success: true,
           user,
