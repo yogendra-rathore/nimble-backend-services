@@ -7,7 +7,7 @@ const ErrorHandler = require("../utils/ErrorHandler");
 // const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 // const fs = require("fs");
 const jwt = require("jsonwebtoken");
-const sendMail = require("../utils/sendMail");
+const {sendMailWithoutFile} = require("../utils/sendMail");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const sendToken = require("../utils/jwtToken");
 // const { isAuthenticated } = require("../middleware/auth");
@@ -62,7 +62,7 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
   console.log("OTP Activation Time",otpExpirationTime);
   
       try {
-        await sendMail({
+        await sendMailWithoutFile({
           email: user.email,
           subject: "Activate your account",
           message: `Hello ${user.name}, Please enter the given OTP to activate your account valid for 10 Minutes only :\n OTP: ${otp} \n Warm Regards,\n Nimble Support`
@@ -233,7 +233,7 @@ router.delete('/deleteUser/:userId', async (req, res) => {
     console.log("OTP Activation Time",otpExpirationTime);
     
         try {
-          await sendMail({
+          await sendMailWithoutFile({
             email: user.email,
             subject: "Delete your nimble account",
             message: `Hello ${user.name}, Please enter the given OTP to delete your account, valid for 10 Minutes only :\n OTP: ${otp} \n Warm Regards,\n Nimble Support`
@@ -303,4 +303,5 @@ router.post(
     }
   })
 );
+
 module.exports=router;
