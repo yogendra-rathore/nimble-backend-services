@@ -24,11 +24,11 @@ function generatePDF(items) {
   items.forEach((item) => {
     doc.fontSize(16).text(`Item: ${item.name}`);
     doc.fontSize(14).text(`Quantity: ${item.qty}`);
-    doc.fontSize(14).text(`Price: SEK${item.originalPrice.toFixed(2)}`).moveDown(0.5);
+    doc.fontSize(14).text(`Price: CAD${item.originalPrice.toFixed(2)}`).moveDown(0.5);
   });
 
   const total = items.reduce((acc, item) => acc + item.originalPrice*item.qty, 0);
-  doc.fontSize(18).text(`Total: SEK${total.toFixed(2)}`, { align: 'right' });
+  doc.fontSize(18).text(`Total: CAD${total.toFixed(2)}`, { align: 'right' });
   const currentY = doc.y;
 
   // Add Footer
@@ -57,13 +57,13 @@ router.post("/", async (req, res) => {
   try {
     console.log("Call reached to backend", req.body);
     console.log("current secret", process.env.STRIPE_SECRET_KEY);
-    const { amount} = req.body;
+    const { amount,currency} = req.body;
     console.log("Data received in payment route---->", amount);
     
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
-      currency: 'SEK',
+      currency: `${currency}`,
       payment_method_types: ['card'],
     },
     {
