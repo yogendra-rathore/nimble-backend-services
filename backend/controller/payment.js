@@ -98,7 +98,7 @@ router.post("/postPayment", async (req, res) =>{
       await sendMailWithFiles({
         email: user.email,
         subject: "Purchase Invoice",
-        message: `Hello ${userEmailName},\n Thanks for shopping with us.PFA your invoice for recent purchase .\n Warm Regards,\n Nimble Support`,
+        message: `Hello ${userEmailName},\n Thank you for shopping with Nimble! .Here is your recent purchase invoice.\n Best Regards,\n Nimble Support Team`,
         filePath: 'receipt.pdf'
       });
       res.status(200).json({
