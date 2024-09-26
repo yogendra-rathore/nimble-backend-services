@@ -3,6 +3,7 @@ const router = express.Router();
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const {sendMailWithFiles} = require("../utils/sendMail");
+const { createOrder } = require("./order");
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -85,39 +86,75 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.post("/postPayment", async (req, res) =>{
+router.post("/postPayment", async (req, res) => {
   try {
-    console.log("Call reached to backend",req.body);
-    console.log("current secret",process.env.STRIPE_SECRET_KEY);
-    const {user,items}=req.body;
-    console.log("Data received in payment route---->",user,items);
-    let userName=user.email.split(".")[0];
-    let userEmailName=userName.charAt(0).toUpperCase() + userName.slice(1);
+    console.log("Call reached backend", req.body);
+    console.log("current secret", process.env.STRIPE_SECRET_KEY);
+
+    const { user, items, cart, shippingAddress, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
+    console.log("Data received in payment route---->", user, items);
+
+    let userName = user.email.split(".")[0];
+    let userEmailName = userName.charAt(0).toUpperCase() + userName.slice(1);
+
     await generatePDF(items);
+
     try {
       await sendMailWithFiles({
         email: user.email,
         subject: "Purchase Invoice",
-        message: `Hello ${userEmailName},\n Thank you for shopping with Nimble! .Here is your recent purchase invoice.\n Best Regards,\n Nimble Support Team`,
+        message: `Hello ${userEmailName},\nThank you for shopping with Nimble! Here is your recent purchase invoice.\nBest Regards,\nNimble Support Team`,
         filePath: 'receipt.pdf'
       });
+
+      const mockReq = {
+        body: {
+          cart,
+          shippingAddress,
+          user,
+          totalPrice,
+          paymentInfo,
+          selectedCollectionTime,
+          isPremium,
+        }
+      };
+
+      const mockRes = {
+        status: (statusCode) => ({
+          json: (response) => {
+            console.log('Order creation response:', response);
+          },
+        }),
+      };
+
+      await createOrder(mockReq, mockRes, (err) => {
+        if (err) {
+          console.log('Error during order creation:', err);
+          return res.status(500).json({
+            error: 'Error during order creation',
+          });
+        }
+      });
+
       res.status(200).json({
         success: true,
-        message: `please check your email:- ${user.email} for invoice`,
+        message: `Please check your email: ${user.email} for the invoice`,
       });
+
     } catch (error) {
-      console.log("Error ",error);
+      console.log("Error sending email or creating order", error);
       res.status(500).json({
         error: 'Internal Server Error',
       });
     }
+
   } catch (error) {
-    console.log("Error ",error);
+    console.log("Error in payment processing", error);
     res.status(500).json({
       error: 'Internal Server Error',
     });
   }
+});
 
-})
 
 module.exports = router;

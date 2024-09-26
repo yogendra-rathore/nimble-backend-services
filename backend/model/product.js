@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
+  productId: {
+    type: String,
+    required: [true, "Please enter your product id!"],
+  },
   name: {
     type: String,
     required: [true, "Please enter your product name!"],
@@ -16,7 +20,7 @@ const productSchema = new mongoose.Schema({
   tags: {
     type: String,
   },
-  barcodeContent: {
+  barCodeContent: {
     type: String,
   },
   originalPrice: {
@@ -32,7 +36,14 @@ const productSchema = new mongoose.Schema({
   },
   images: [
     {
-      type: String,
+      public_id: {
+        type: String,
+        required: true,
+      },
+      url: {
+        type: String,
+        required: true,
+      },
     },
   ],
   reviews: [
