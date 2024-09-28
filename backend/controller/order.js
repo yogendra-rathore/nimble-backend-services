@@ -6,7 +6,9 @@ const { isAuthenticated, isSeller, isAdmin } = require("../middleware/auth");
 const Order = require("../model/order");
 const Shop = require("../model/shop");
 const Product = require("../model/product");
-const mongoose = require('mongoose');
+const Notification = require("../model/notification");
+const { createAndEmitNotification } = require('../utils/notificationHelper');
+
 
 const generateOrderCode = () => {
   return Math.floor(1000 + Math.random() * 9000);
@@ -45,6 +47,15 @@ const createOrder = async (req, res, next) => {
         isPremium,
       });
       orders.push(order);
+
+      // Emit order update notification to customer
+      await createAndEmitNotification(req.app.get('io'), {
+        recipientId: shopId,
+        recipientType: 'Seller',
+        message: `A new order has been placed with id: ${order._id}.`,
+        orderId: order._id,
+        type: 'order_placed',
+      });
     }
 
     res.status(201).json({
@@ -123,7 +134,7 @@ router.get(
   })
 );
 
-// update order status for seller
+// Update order status for seller
 router.put(
   "/update-order-status/:id",
   isSeller,
@@ -136,7 +147,7 @@ router.put(
       }
       if (req.body.status === "Ready") {
         order.cart.forEach(async (o) => {
-          await updateOrder(o._id, o.qty);
+          await updateOrder(o._id, o.qty, req);
         });
       }
 
@@ -146,37 +157,61 @@ router.put(
         order.deliveredAt = Date.now();
         order.paymentInfo.status = "Succeeded";
         const serviceCharge = 0;
-        await updateSellerInfo(order.totalPrice - serviceCharge);
+        await updateSellerInfo(order.totalPrice - serviceCharge, req);
       }
 
       await order.save({ validateBeforeSave: false });
+
+      console.log(`Order status updated: ${order.status}`);
+
+      // Emit order update notification to customer
+      await createAndEmitNotification(req.app.get('io'), {
+        recipientId: order.user._id,
+        recipientType: 'Customer',
+        message: `Your order status has been updated to ${order.status}.`,
+        orderId: order._id,
+        type: 'order_update',
+      });
+
 
       res.status(200).json({
         success: true,
         order,
       });
-
-      async function updateOrder(id, qty) {
-        const product = await Product.findById(id);
-
-        product.stock -= qty;
-        product.sold_out += qty;
-
-        await product.save({ validateBeforeSave: false });
-      }
-
-      async function updateSellerInfo(amount) {
-        const seller = await Shop.findById(req.seller.id);
-        
-        seller.availableBalance = seller.availableBalance + amount;
-
-        await seller.save();
-      }
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
     }
   })
 );
+
+// Example usage in updateOrder function
+async function updateOrder(id, qty, req) {
+  const product = await Product.findById(id);
+
+  product.stock -= qty;
+  product.sold_out += qty;
+
+  await product.save({ validateBeforeSave: false });
+
+  // Emit out of stock notification if stock is zero
+  if (product.stock <= 0) {
+    await createAndEmitNotification(req.app.get('io'), {
+      recipientId: product.shopId,
+      recipientType: 'Seller',
+      productId: product._id,
+      message: `Product ${product.name} is out of stock.`,
+      type: 'out_of_stock',
+    });
+  }
+}
+
+async function updateSellerInfo(amount, req) {
+  const seller = await Shop.findById(req.seller.id);
+
+  seller.availableBalance = seller.availableBalance + amount;
+
+  await seller.save();
+}
 
 router.put(
   "/update-cart/:id",
@@ -289,17 +324,8 @@ router.put(
 
       if (req.body.status === "Refund Success") {
         order.cart.forEach(async (o) => {
-          await updateOrder(o._id, o.qty);
+          await updateOrder(o._id, o.qty, req);
         });
-      }
-
-      async function updateOrder(id, qty) {
-        const product = await Product.findById(id);
-
-        product.stock += qty;
-        product.sold_out -= qty;
-
-        await product.save({ validateBeforeSave: false });
       }
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
