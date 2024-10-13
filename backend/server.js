@@ -56,7 +56,8 @@ app.use("/test", (req, res) => {
 });
 
 // Import routes
-const user = require("./controller/user");
+// const user = require("./controller/user");
+const userRoutes = require("./routes/authRoutes");
 const shop = require("./controller/shop");
 const product = require("./controller/product");
 const payment = require("./controller/payment");
@@ -64,7 +65,7 @@ const order = require("./controller/order");
 const notification = require("./controller/notification");
 
 // Use imported routes
-app.use("/api/v2/user", user);
+app.use("/api/v2/user", userRoutes);
 app.use("/api/v2/order", order);
 app.use("/api/v2/shop", shop);
 app.use("/api/v2/product", product);
