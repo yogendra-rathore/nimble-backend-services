@@ -97,15 +97,15 @@ router.post("/postPayment", async (req, res) => {
     let userName = user.email.split(".")[0];
     let userEmailName = userName.charAt(0).toUpperCase() + userName.slice(1);
 
-    // await generatePDF(cart);
+    await generatePDF(cart);
 
     try {
-      // await sendMailWithFiles({
-      //   email: user.email,
-      //   subject: "Purchase Invoice",
-      //   message: `Hello ${userEmailName},\nThank you for shopping with Nimble! Here is your recent purchase invoice.\nBest Regards,\nNimble Support Team`,
-      //   filePath: 'receipt.pdf'
-      // });
+      await sendMailWithFiles({
+        email: user.email,
+        subject: "Purchase Invoice",
+        message: `Hello ${userEmailName},\nThank you for shopping with Nimble! Here is your recent purchase invoice.\nBest Regards,\nNimble Support Team`,
+        filePath: 'receipt.pdf'
+      });
 
       const mockReq = {
         body: {
