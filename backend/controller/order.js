@@ -14,7 +14,7 @@ const generateOrderCode = () => {
   return Math.floor(1000 + Math.random() * 9000);
 };
 
-const createOrder = async (req, res, next) => {
+ const createOrder = async (req, next) => {
   try {
     const { cart, shippingAddress, user, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
 
@@ -58,10 +58,11 @@ const createOrder = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({
-      success: true,
-      orders,
-    });
+    // res.status(201).json({
+    //   success: true,
+    //   orders,
+    // });
+    return orders;
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
   }

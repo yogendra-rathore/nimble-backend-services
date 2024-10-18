@@ -3,7 +3,7 @@ const router = express.Router();
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const {sendMailWithFiles} = require("../utils/sendMail");
-const { createOrder } = require("./order");
+const { createOrder } = require("../utils/notificationHelper");
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -91,21 +91,21 @@ router.post("/postPayment", async (req, res) => {
     console.log("Call reached backend", req.body);
     console.log("current secret", process.env.STRIPE_SECRET_KEY);
 
-    const { user, items, cart, shippingAddress, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
-    console.log("Data received in payment route---->", user, items);
+    const { user, cart, shippingAddress, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
+    console.log("Data received in payment route---->", user, cart);
 
     let userName = user.email.split(".")[0];
     let userEmailName = userName.charAt(0).toUpperCase() + userName.slice(1);
 
-    await generatePDF(items);
+    // await generatePDF(cart);
 
     try {
-      await sendMailWithFiles({
-        email: user.email,
-        subject: "Purchase Invoice",
-        message: `Hello ${userEmailName},\nThank you for shopping with Nimble! Here is your recent purchase invoice.\nBest Regards,\nNimble Support Team`,
-        filePath: 'receipt.pdf'
-      });
+      // await sendMailWithFiles({
+      //   email: user.email,
+      //   subject: "Purchase Invoice",
+      //   message: `Hello ${userEmailName},\nThank you for shopping with Nimble! Here is your recent purchase invoice.\nBest Regards,\nNimble Support Team`,
+      //   filePath: 'receipt.pdf'
+      // });
 
       const mockReq = {
         body: {
@@ -119,25 +119,35 @@ router.post("/postPayment", async (req, res) => {
         }
       };
 
-      const mockRes = {
-        status: (statusCode) => ({
-          json: (response) => {
-            console.log('Order creation response:', response);
-          },
-        }),
-      };
+      // const mockRes = {
+      //   status: (statusCode) => ({
+      //     json: (response) => {
+      //       console.log('Order creation response:', response);
+      //     },
+      //   }),
+      // };
 
-      await createOrder(mockReq, mockRes, (err) => {
-        if (err) {
-          console.log('Error during order creation:', err);
-          return res.status(500).json({
-            error: 'Error during order creation',
-          });
-        }
-      });
+      // await createOrder(mockReq, mockRes, (err) => {
+      //   if (err) {
+      //     console.log('Error during order creation:', err);
+      //     return res.status(500).json({
+      //       error: 'Error during order creation',
+      //     });
+      //   }
+      // });
+
+      const userSpecificOrderCreatedObj=await createOrder(mockReq,(err) => {
+          if (err) {
+            console.log('Error during order creation:', err);
+            return res.status(500).json({
+              error: 'Error during order creation',
+            });
+          }
+        });
 
       res.status(200).json({
         success: true,
+        userSpecificOrderCreatedObj,
         message: `Please check your email: ${user.email} for the invoice`,
       });
 

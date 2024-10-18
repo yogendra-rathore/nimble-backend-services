@@ -126,6 +126,7 @@ exports.loginUser=async (req, res, next) => {
     console.log("Data Received Login",email,password);
 
     const user = await User.findOne({ email }).select("+password");
+    console.log("User Login Details",user);
 
     if (!user) {
       res.status(400).json({
