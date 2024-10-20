@@ -9,12 +9,19 @@ const Product = require("../model/product");
 const Notification = require("../model/notification");
 const { createAndEmitNotification } = require('../utils/notificationHelper');
 
+// Socket.io instance
+let io;
+
+// Initialize socket
+const initializeSocket = (socketIo) => {
+  io = socketIo;
+};
 
 const generateOrderCode = () => {
   return Math.floor(1000 + Math.random() * 9000);
 };
 
- const createOrder = async (req, next) => {
+const createOrder = async (req, res, next) => {
   try {
     const { cart, shippingAddress, user, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
 
@@ -48,21 +55,22 @@ const generateOrderCode = () => {
       });
       orders.push(order);
 
-      // Emit order update notification to customer
-      await createAndEmitNotification(req.app.get('io'), {
-        recipientId: shopId,
-        recipientType: 'Seller',
-        message: `A new order has been placed with id: ${order._id}.`,
-        orderId: order._id,
-        type: 'order_placed',
-      });
+      // Emit order update notification to seller
+      if (io) {
+        await createAndEmitNotification(io, {
+          recipientId: shopId,
+          recipientType: 'Seller',
+          message: `A new order has been placed with id: ${order._id}.`,
+          orderId: order._id,
+          type: 'order_placed',
+        });
+      }
     }
 
-    // res.status(201).json({
-    //   success: true,
-    //   orders,
-    // });
-    return orders;
+    res.status(201).json({
+      success: true,
+      orders,
+    });
   } catch (error) {
     return next(new ErrorHandler(error.message, 500));
   }
@@ -166,13 +174,15 @@ router.put(
       console.log(`Order status updated: ${order.status}`);
 
       // Emit order update notification to customer
-      await createAndEmitNotification(req.app.get('io'), {
-        recipientId: order.user._id,
-        recipientType: 'Customer',
-        message: `Your order status has been updated to ${order.status}.`,
-        orderId: order._id,
-        type: 'order_update',
-      });
+      if (io) {
+        await createAndEmitNotification(io, {
+          recipientId: order.user._id,
+          recipientType: 'Customer',
+          message: `Your order status has been updated to ${order.status}.`,
+          orderId: order._id,
+          type: 'order_update',
+        });
+      }
 
 
       res.status(200).json({
@@ -195,8 +205,8 @@ async function updateOrder(id, qty, req) {
   await product.save({ validateBeforeSave: false });
 
   // Emit out of stock notification if stock is zero
-  if (product.stock <= 0) {
-    await createAndEmitNotification(req.app.get('io'), {
+  if (product.stock <= 0 && io) {
+    await createAndEmitNotification(io, {
       recipientId: product.shopId,
       recipientType: 'Seller',
       productId: product._id,
@@ -462,5 +472,7 @@ router.get(
 );
 
 
-
-module.exports = router;
+module.exports = {
+  router,
+  initializeSocket
+};

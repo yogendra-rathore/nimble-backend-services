@@ -7,6 +7,8 @@ const socketIo = require("socket.io");
 const cloudinary = require("cloudinary");
 const ErrorHandler = require("./middleware/error");
 const connectDatabase = require("./db/Database");
+const { initializeSocket: initializeOrderSocket } = require('./controller/order');
+const { initializeSocket: initializeNotificationSocket } = require('./utils/notificationHelper');
 
 // Express app setup
 const app = express();
@@ -41,6 +43,10 @@ io.on('connection', (socket) => {
     });
 });
 
+// Initialize sockets for order and notification
+initializeOrderSocket(io);
+initializeNotificationSocket(io)
+
 // Setting up middlewares
 app.use(cors({
     origin: ['http://localhost:3000', 'https://fair-formerly-anchovy.ngrok-free.app', 'http://localhost:3001'],
@@ -61,7 +67,7 @@ const userRoutes = require("./routes/authRoutes");
 const shop = require("./controller/shop");
 const product = require("./controller/product");
 const payment = require("./controller/payment");
-const order = require("./controller/order");
+const { router: order } = require("./controller/order");
 const notification = require("./controller/notification");
 
 // Use imported routes

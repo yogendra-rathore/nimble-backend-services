@@ -3,6 +3,13 @@ const Notification = require('../model/notification');
 const Order = require('../model/order');
 const ErrorHandler = require('./ErrorHandler');
 
+let io;
+
+const initializeSocket = (socketIo) => {
+  io = socketIo;
+};
+
+
 async function createAndEmitNotification(io, { recipientId, recipientType, message, orderId, productId, type }) {
     try {
         const notification = new Notification({
@@ -60,7 +67,7 @@ const calculateCollectionDate = (option) => {
     return Math.floor(1000 + Math.random() * 9000);
   };
   
-   const createOrder = async (req, next) => {
+   const createOrder = async (req) => {
     try {
       const { cart, shippingAddress, user, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
   
@@ -94,14 +101,15 @@ const calculateCollectionDate = (option) => {
         });
         orders.push(order);
   
-        // Emit order update notification to customer
-        // await createAndEmitNotification(req.app.get('io'), {
-        //   recipientId: shopId,
-        //   recipientType: 'Seller',
-        //   message: `A new order has been placed with id: ${order._id}.`,
-        //   orderId: order._id,
-        //   type: 'order_placed',
-        // });
+        if(io) {
+          await createAndEmitNotification(io, {
+            recipientId: shopId,
+            recipientType: 'Seller',
+            message: `A new order has been placed with id: ${order._id}.`,
+            orderId: order._id,
+            type: 'order_placed',
+          });
+        }
       }
   
       // res.status(201).json({
@@ -110,8 +118,9 @@ const calculateCollectionDate = (option) => {
       // });
       return orders;
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      console.error('Error creating order:', error);
+      throw new ErrorHandler(error.message, 500);
     }
   };
 
-module.exports = { createAndEmitNotification,calculateCollectionDate,createOrder };
+module.exports = { createAndEmitNotification, calculateCollectionDate, createOrder, initializeSocket };

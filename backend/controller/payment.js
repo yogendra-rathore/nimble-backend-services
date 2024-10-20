@@ -136,14 +136,14 @@ router.post("/postPayment", async (req, res) => {
       //   }
       // });
 
-      const userSpecificOrderCreatedObj=await createOrder(mockReq,(err) => {
-          if (err) {
-            console.log('Error during order creation:', err);
-            return res.status(500).json({
-              error: 'Error during order creation',
-            });
-          }
-        });
+      const userSpecificOrderCreatedObj = await createOrder(mockReq, (err) => {
+        if (err) {
+          console.log('Error during order creation:', err);
+          return res.status(500).json({
+            error: 'Error during order creation',
+          });
+        }
+      });
 
       res.status(200).json({
         success: true,
