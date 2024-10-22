@@ -17,7 +17,7 @@ const server = http.createServer(app);
 // Socket.io setup with CORS
 const io = socketIo(server, {
     cors: {
-        origin: ['http://localhost:3000', 'https://fair-formerly-anchovy.ngrok-free.app', 'http://localhost:3001'],
+        origin: '*',
         credentials: true
     }
 });
@@ -49,7 +49,7 @@ initializeNotificationSocket(io)
 
 // Setting up middlewares
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://fair-formerly-anchovy.ngrok-free.app', 'http://localhost:3001'],
+    origin: '*',
     credentials: true
 }));
 app.use(express.json());
