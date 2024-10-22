@@ -42,6 +42,10 @@ const shopSchema = new mongoose.Schema({
       required: true,
     },
   },
+  location: {
+    type: String,
+    required: true,
+  },
   zipCode: {
     type: Number,
     required: true,
@@ -53,7 +57,7 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transections: [
+  transactions: [
     {
       amount: {
         type: Number,

@@ -9,6 +9,10 @@ const orderSchema = new mongoose.Schema({
         type: Array,
         required: false,
     },
+    alternateItems: {
+        type: Array,
+        required: false,
+    },
     shippingAddress: {
         type: Object,
         required: true,

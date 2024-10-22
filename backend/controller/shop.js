@@ -32,17 +32,17 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
         public_id: myCloud.public_id,
         url: myCloud.secure_url,
       },
+      location: req.body.location,
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
       zipCode: req.body.zipCode,
     };
-
     const activationToken = createActivationToken(seller);
 
     const activationUrl = `http://localhost:3000/seller/activation/${activationToken}`;
 
     try {
-      await sendMail({
+      await sendMail.sendMailWithoutFile({
         email: seller.email,
         subject: "Activate your Shop",
         message: `Hello ${seller.name}, please click on the link to activate your shop: ${activationUrl}`,
@@ -52,9 +52,11 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
         message: `please check your email:- ${seller.email} to activate your shop!`,
       });
     } catch (error) {
+      console.log(error);
       return next(new ErrorHandler(error.message, 500));
     }
   } catch (error) {
+    console.log(error);
     return next(new ErrorHandler(error.message, 400));
   }
 }));
@@ -62,7 +64,7 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
 // create activation token
 const createActivationToken = (seller) => {
   return jwt.sign(seller, process.env.ACTIVATION_SECRET, {
-    expiresIn: "5m",
+    expiresIn: "15m",
   });
 };
 
@@ -81,7 +83,7 @@ router.post(
       if (!newSeller) {
         return next(new ErrorHandler("Invalid token", 400));
       }
-      const { name, email, password, avatar, zipCode, address, phoneNumber } =
+      const { name, email, password, avatar, location, zipCode, address, phoneNumber } =
         newSeller;
 
       let seller = await Shop.findOne({ email });
@@ -95,6 +97,7 @@ router.post(
         email,
         avatar,
         password,
+        location,
         zipCode,
         address,
         phoneNumber,
@@ -102,6 +105,7 @@ router.post(
 
       sendShopToken(seller, 201, res);
     } catch (error) {
+      console.log(error);
       return next(new ErrorHandler(error.message, 500));
     }
   })

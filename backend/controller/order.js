@@ -154,6 +154,11 @@ router.put(
       if (!order) {
         return next(new ErrorHandler("Order not found with this id", 400));
       }
+
+      if (req.body.status === "Ask For Alternatives") {
+        order.alternateItems = req.body.alternateItems;
+      }
+
       if (req.body.status === "Ready") {
         order.cart.forEach(async (o) => {
           await updateOrder(o._id, o.qty, req);
@@ -183,7 +188,6 @@ router.put(
           type: 'order_update',
         });
       }
-
 
       res.status(200).json({
         success: true,
@@ -220,7 +224,9 @@ async function updateSellerInfo(amount, req) {
   const seller = await Shop.findById(req.seller.id);
 
   seller.availableBalance = seller.availableBalance + amount;
-
+  if(!seller.location) {
+    seller.location = "undefined";
+  }
   await seller.save();
 }
 
