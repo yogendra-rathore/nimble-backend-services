@@ -15,7 +15,12 @@ const app = express();
 const server = http.createServer(app);
 
 // Socket.io setup with CORS
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: ['http://localhost:3000', 'https://peppy-praline-354922.netlify.app', 'http://localhost:3001'],
+        credentials: true
+    }
+});
 
 // Initialize socket connections
 io.on('connection', (socket) => {
@@ -42,11 +47,11 @@ io.on('connection', (socket) => {
 initializeOrderSocket(io);
 initializeNotificationSocket(io)
 
-// // Setting up middlewares
-// app.use(cors({
-//     origin: ['http://localhost:3000', 'https://peppy-praline-354922.netlify.app', 'http://localhost:3001'],
-//     credentials: true
-// }));
+// Setting up middlewares
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://peppy-praline-354922.netlify.app', 'http://localhost:3001'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
