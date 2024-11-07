@@ -50,10 +50,13 @@ initializeNotificationSocket(io)
 // Setting up middlewares
 app.use(cors({
     origin: ['http://localhost:3000', 'https://nimble-admin-ui.vercel.app', 'http://localhost:3001'],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-csrf-token']
 }));
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Test route
