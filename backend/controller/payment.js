@@ -36,8 +36,8 @@ function generatePDF(items,userName,orderNumberCustom) {
   });
 
   // Add the logo
-  const logoWidth = 100; // Adjust as needed
-  const logoHeight = 50; // Adjust as needed
+  const logoWidth = 60; // Adjust as needed
+  const logoHeight = 60; // Adjust as needed
   const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/invoiceLogo.png'));
   doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
 
@@ -45,7 +45,7 @@ function generatePDF(items,userName,orderNumberCustom) {
   doc.moveDown(2)
     .fontSize(16)
     .font('Helvetica-Bold')
-    .text('Thank You for Your Order!', { align: 'center' })
+    .text('\n Thank You for Your Order!', { align: 'center' })
     .moveDown(0.5);
 
   // Add Email and Order Info
@@ -88,20 +88,20 @@ function generatePDF(items,userName,orderNumberCustom) {
   const total = subtotal + tax + serviceFee;
 
   doc.moveDown(1).font('Helvetica-Bold');
-  doc.text('Subtotal', startX + colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${subtotal.toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+  doc.text('Subtotal',colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
+  doc.text(`CAD${subtotal.toFixed(2)}`,colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
 
   currentY = doc.y;
-  doc.text(`Tax (${taxRate}%)`, startX + colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${tax.toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+  doc.text(`Tax (${taxRate}%)`, colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
+  doc.text(`CAD${tax.toFixed(2)}`, colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
 
   currentY = doc.y;
-  doc.text('Service Fee', startX + colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${serviceFee.toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+  doc.text('Service Fee', colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
+  doc.text(`CAD${serviceFee.toFixed(2)}`, colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
 
   currentY = doc.y;
-  doc.text('Total', startX + colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${total.toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+  doc.text('Total', colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
+  doc.text(`CAD${total.toFixed(2)}`,  colWidths[0] + colWidths[1] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
 
   // Add Footer
   doc.moveDown(2).font('Helvetica').fontSize(10).text('Questions about your order? Contact our support team.', { align: 'center' });
