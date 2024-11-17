@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
 const {sendMailWithFiles} = require("../utils/sendMail");
 const { createOrder } = require("../utils/notificationHelper");
 const crypto = require('crypto'); // For hashing
-const logoImg=require('../assets/incoiceLogo.png')
-
+const path = require('path');
+const fs = require('fs');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 function generatePDF(items,userName,orderNumberCustom) {
@@ -39,7 +38,8 @@ function generatePDF(items,userName,orderNumberCustom) {
   // Add the logo
   const logoWidth = 100; // Adjust as needed
   const logoHeight = 50; // Adjust as needed
-  doc.image(logoImg, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
+  const logoBuffer = fs.readFileSync(path.join(__dirname, '/assets/incoiceLogo.png'));
+  doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
 
   // Add Title
   doc.moveDown(2)
