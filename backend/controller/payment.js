@@ -5,6 +5,7 @@ const fs = require('fs');
 const {sendMailWithFiles} = require("../utils/sendMail");
 const { createOrder } = require("../utils/notificationHelper");
 const crypto = require('crypto'); // For hashing
+const logoImg=require('../assets/incoiceLogo.png')
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -38,7 +39,7 @@ function generatePDF(items,userName,orderNumberCustom) {
   // Add the logo
   const logoWidth = 100; // Adjust as needed
   const logoHeight = 50; // Adjust as needed
-  doc.image('backend/assets/invoiceLogo.png', (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
+  doc.image(logoImg, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
 
   // Add Title
   doc.moveDown(2)
