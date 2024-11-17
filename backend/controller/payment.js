@@ -127,7 +127,7 @@ function generateOrderId(email, orderDate) {
   const emailHash = crypto.createHash('md5').update(email).digest('hex').slice(0, 8).toUpperCase();
 
   // Combine to form the unique order ID
-  return `NIM-${year}-${emailHash}`;
+  return `${emailHash}`;
 }
 
 function generateOrderNumber(orderDate, orderId) {
@@ -188,16 +188,16 @@ router.post("/postPayment", async (req, res) => {
         email: user.email,
         subject: `Your Nimble Receipt - Starbank Market Pickup - Order #${orderNumberCustom}`,
         message: `Hello ${userEmailName},\nThanks for using Nimble Curbside Pickup at Fulton Market! Your digital receipt for today's pickup is attached below.
-        \nWe hope your pickup experience was smooth. Next time, try our in-store snap & go feature to skip the waiting entirely. \n
+        \nWe hope your pickup experience was smooth. Next time, try our in-store snap & go feature to skip the waiting entirely.
         \n Questions? Our team is here at help@nimble.com \n
         \n Happy shopping! \n
-        The Nimble Team \n
+        \n The Nimble Team \n
         \n --------------- \n
         Order #${orderNumberCustom} \n
         Store: Starbank Market \n
         Pickup Time: ${selectedCollectionTime} \n
         This is an automated message.`,
-        filePath: 'receipt.pdf'
+        filePath: 'invoice.pdf'
       });
 
       const mockReq = {
