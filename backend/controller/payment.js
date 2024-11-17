@@ -38,7 +38,7 @@ function generatePDF(items,userName,orderNumberCustom) {
   // Add the logo
   const logoWidth = 100; // Adjust as needed
   const logoHeight = 50; // Adjust as needed
-  const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/incoiceLogo.png'));
+  const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/invoiceLogo.png'));
   doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
 
   // Add Title
