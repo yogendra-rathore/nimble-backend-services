@@ -209,10 +209,10 @@ router.post("/postPayment", async (req, res) => {
         \n Happy shopping! \n
         \n The Nimble Team \n
         \n --------------- \n
-        Order #${orderNumberCustom} \n
-        Store: Starbank Market \n
-        Pickup Time: ${selectedCollectionTime} \n
-        This is an automated message.`,
+        \n Order #${orderNumberCustom} \n
+        \n Store: Starbank Market \n
+        \n Pickup Time: ${selectedCollectionTime} \n
+        \n This is an automated message.`,
         filePath: 'invoice.pdf'
       });
 
