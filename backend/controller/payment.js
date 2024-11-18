@@ -36,10 +36,10 @@ function generatePDF(items,userName,orderNumberCustom) {
   });
 
   // Add the logo
-  const logoWidth = 60; // Adjust as needed
-  const logoHeight = 60; // Adjust as needed
+  const logoWidth = 50; // Adjust as needed
+  const logoHeight = 50; // Adjust as needed
   const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/invoiceLogo.png'));
-  doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight }).moveDown(1);
+  doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight }).moveDown(2.5);
 
  // Title
  doc.fontSize(16)
@@ -116,6 +116,7 @@ doc.text('Total', startX, currentY, { continued: true }).font('Helvetica-Bold')
 
 // Footer
 doc.moveDown(2)
+  .font('Helvetica')
   .fontSize(10)
   .text('Questions about your order? Contact our support team.', { align: 'center', color: '#666666' })
   .moveDown(0.5)
