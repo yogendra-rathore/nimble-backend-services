@@ -39,7 +39,7 @@ function generatePDF(items,userName,orderNumberCustom) {
   const logoWidth = 60; // Adjust as needed
   const logoHeight = 60; // Adjust as needed
   const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/invoiceLogo.png'));
-  doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
+  doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight }).moveDown(1);
 
  // Title
  doc.fontSize(16)
@@ -67,7 +67,7 @@ const colWidth = doc.page.width - 100; // Total width minus margins
 
 items.forEach((item) => {
  // Item name
- doc.font('Helvetica')
+ doc.font('Helvetica-Bold')
     .fontSize(11)
     .text(item.name, startX, currentY, { continued: true });
 
@@ -94,24 +94,24 @@ doc.moveDown(1);
 currentY = doc.y;
 
 // Subtotal
-doc.font('Helvetica')
+doc.font('Helvetica-Bold')
   .fontSize(11)
   .text('Subtotal', startX, currentY, { continued: true })
   .text(`CAD ${subtotal.toFixed(2)}`, { align: 'right' });
 
 // Tax
 currentY = doc.y;
-doc.text(`Tax (${taxRate}%)`, startX, currentY, { continued: true })
+doc.text(`Tax (${taxRate}%)`, startX, currentY, { continued: true }).font('Helvetica-Bold')
   .text(`CAD ${tax.toFixed(2)}`, { align: 'right' });
 
 // Service Fee
 currentY = doc.y;
-doc.text('Service Fee', startX, currentY, { continued: true })
+doc.text('Service Fee', startX, currentY, { continued: true }).font('Helvetica-Bold')
   .text(`CAD ${serviceFee.toFixed(2)}`, { align: 'right' });
 
 // Total
 currentY = doc.y;
-doc.text('Total', startX, currentY, { continued: true })
+doc.text('Total', startX, currentY, { continued: true }).font('Helvetica-Bold')
   .text(`CAD ${total.toFixed(2)}`, { align: 'right' });
 
 // Footer
