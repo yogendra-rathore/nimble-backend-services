@@ -41,74 +41,90 @@ function generatePDF(items,userName,orderNumberCustom) {
   const logoBuffer = fs.readFileSync(path.join(__dirname, '../assets/invoiceLogo.png'));
   doc.image(logoBuffer, (doc.page.width - logoWidth) / 2, 20, { width: logoWidth, height: logoHeight });
 
-  // Add Title
-  doc.moveDown(2)
-    .fontSize(16)
-    .font('Helvetica-Bold')
-    .text('\n Thank You for Your Order!', { align: 'center' })
-    .moveDown(0.5);
+ // Title
+ doc.fontSize(16)
+ .font('Helvetica-Bold')
+ .text('Thank You for Your Order!', { align: 'center' })
+ .moveDown(0.5);
 
-  // Add Email and Order Info
-  doc.fontSize(12)
-    .font('Helvetica')
-    .text(`Hello ${email},`, { align: 'center' })
-    .text('Thank you for shopping with Nimble! Here is your purchase receipt.', { align: 'center' })
-    .moveDown(0.5)
-    .text(`Order #${orderNumber}`, { align: 'center' })
-    .text(date, { align: 'center' })
-    .moveDown(1);
+// Email and Welcome Message
+doc.fontSize(11)
+ .font('Helvetica')
+ .text(`Hello ${email},`, { align: 'center', color: '#666666' })
+ .text('Thank you for shopping with Nimble! Here is your purchase', { align: 'center', color: '#666666' })
+ .text('receipt.', { align: 'center', color: '#666666' })
+ .moveDown(0.5);
 
-  // Add Table Header
-  const startX = 50;
-  const startY = doc.y;
-  const colWidths = [250, 100, 100];
-  doc.fontSize(12).font('Helvetica-Bold');
-  doc.text('Item', startX, startY, { width: colWidths[0] });
-  doc.text('Quantity', startX + colWidths[0], startY, { width: colWidths[1], align: 'right' });
-  doc.text('Price', startX + colWidths[0] + colWidths[1], startY, { width: colWidths[2], align: 'right' });
+// Order Number and Date
+doc.text(`Order #${orderNumber}`, { align: 'center', color: '#666666' })
+ .text(date, { align: 'center', color: '#666666' })
+ .moveDown(1);
 
-  doc.moveDown(0.5).font('Helvetica');
-  let currentY = doc.y;
+// Items
+const startX = 50;
+let currentY = doc.y;
+const colWidth = doc.page.width - 100; // Total width minus margins
 
-  // Add Table Rows
-  let subtotal = 0;
-  items.forEach((item) => {
-    const itemTotal = item.originalPrice * item.qty;
-    subtotal += itemTotal;
+items.forEach((item) => {
+ // Item name
+ doc.font('Helvetica')
+    .fontSize(11)
+    .text(item.name, startX, currentY, { continued: true });
 
-    doc.text(item.name, startX, currentY, { width: colWidths[0] });
-    doc.text(item.qty.toString(), startX + colWidths[0], currentY, { width: colWidths[1], align: 'right' });
-    doc.text(`CAD${itemTotal.toFixed(2)}`, startX + colWidths[0] + colWidths[1], currentY, { width: colWidths[2], align: 'right' });
+ // Price (right-aligned)
+ doc.text(`CAD ${(item.originalPrice * item.qty).toFixed(2)}`, { align: 'right' });
 
-    currentY = doc.y;
-  });
+ // Quantity (on next line)
+ currentY = doc.y;
+ doc.font('Helvetica')
+    .fontSize(10)
+    .text(`Quantity: ${item.qty}`, startX, currentY, { color: '#666666' });
 
-  // Add Summary
-  const tax = subtotal * (taxRate / 100);
-  const total = subtotal + tax + serviceFee;
+ currentY = doc.y + 10;
+ doc.y = currentY;
+});
 
-  doc.moveDown(1).font('Helvetica-Bold');
-  doc.text('Subtotal',colWidths[0] , currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${subtotal.toFixed(2)}`,colWidths[0] + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+// Calculate totals
+const subtotal = items.reduce((sum, item) => sum + (item.originalPrice * item.qty), 0);
+const tax = subtotal * (taxRate / 100);
+const total = subtotal + tax + serviceFee;
 
-  currentY = doc.y;
-  doc.text(`Tax (${taxRate}%)`, colWidths[0] , currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${tax.toFixed(2)}`, colWidths[0]  + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+// Summary section
+doc.moveDown(1);
+currentY = doc.y;
 
-  currentY = doc.y;
-  doc.text('Service Fee', colWidths[0] , currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${serviceFee.toFixed(2)}`, colWidths[0]  + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+// Subtotal
+doc.font('Helvetica')
+  .fontSize(11)
+  .text('Subtotal', startX, currentY, { continued: true })
+  .text(`CAD ${subtotal.toFixed(2)}`, { align: 'right' });
 
-  currentY = doc.y;
-  doc.text('Total', colWidths[0] , currentY, { width: colWidths[2], align: 'right' });
-  doc.text(`CAD${total.toFixed(2)}`,  colWidths[0]  + colWidths[2], currentY, { width: colWidths[2], align: 'right' });
+// Tax
+currentY = doc.y;
+doc.text(`Tax (${taxRate}%)`, startX, currentY, { continued: true })
+  .text(`CAD ${tax.toFixed(2)}`, { align: 'right' });
 
-  // Add Footer
-  doc.moveDown(2).font('Helvetica').fontSize(10).text('Questions about your order? Contact our support team.', { align: 'center' });
-  doc.text('© 2024 Nimble Technologies Inc. This is an automated email, please do not reply.', { align: 'center' });
-  doc.text('Terms of Service • Privacy Policy', { align: 'center' });
+// Service Fee
+currentY = doc.y;
+doc.text('Service Fee', startX, currentY, { continued: true })
+  .text(`CAD ${serviceFee.toFixed(2)}`, { align: 'right' });
 
-  doc.end();
+// Total
+currentY = doc.y;
+doc.text('Total', startX, currentY, { continued: true })
+  .text(`CAD ${total.toFixed(2)}`, { align: 'right' });
+
+// Footer
+doc.moveDown(2)
+  .fontSize(10)
+  .text('Questions about your order? Contact our support team.', { align: 'center', color: '#666666' })
+  .moveDown(0.5)
+  .fontSize(9)
+  .text('© 2024 Nimble Technologies Inc.', { align: 'center', color: '#666666' })
+  .text('This is an automated email, please do not reply.', { align: 'center', color: '#666666' })
+  .text('Terms of Service • Privacy Policy', { align: 'center', color: '#666666' });
+
+doc.end();
 }
 
 function getCurrentDate() {
