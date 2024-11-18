@@ -69,7 +69,7 @@ const calculateCollectionDate = (option) => {
   
    const createOrder = async (req) => {
     try {
-      const { cart, shippingAddress, user, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
+      const { cart, shippingAddress, user, totalPrice, paymentInfo, selectedCollectionTime, orderNumberCustom,isPremium } = req.body;
   
       // Calculate collection date
       const collectionDate = calculateCollectionDate(selectedCollectionTime);
@@ -87,7 +87,8 @@ const calculateCollectionDate = (option) => {
       const orders = [];
   
       for (const [shopId, items] of shopItemsMap) {
-        const orderCode = generateOrderCode();
+        // const orderCode = generateOrderCode();
+        const orderCode = orderNumberCustom;
   
         const order = await Order.create({
           cart: items,

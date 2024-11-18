@@ -116,14 +116,13 @@ doc.text('Total', startX, currentY, { continued: true }).font('Helvetica-Bold')
 
 // Footer
 doc.moveDown(2)
-  .font('Helvetica')
   .fontSize(10)
-  .text('Questions about your order? Contact our support team.', { align: 'center', color: '#666666' })
+  .text('Questions about your order? Contact our support team.', { align: 'center', color: '#666666' }).font('Helvetica')
   .moveDown(0.5)
   .fontSize(9)
-  .text('© 2024 Nimble Technologies Inc.', { align: 'center', color: '#666666' })
-  .text('This is an automated email, please do not reply.', { align: 'center', color: '#666666' })
-  .text('Terms of Service • Privacy Policy', { align: 'center', color: '#666666' });
+  .text('© 2024 Nimble Technologies Inc.', { align: 'center', color: '#666666' }).font('Helvetica')
+  .text('This is an automated email, please do not reply.', { align: 'center', color: '#666666' }).font('Helvetica')
+  .text('Terms of Service • Privacy Policy', { align: 'center', color: '#666666' }).font('Helvetica');
 
 doc.end();
 }
@@ -204,7 +203,7 @@ router.post("/postPayment", async (req, res) => {
       await sendMailWithFiles({
         email: user.email,
         subject: `Your Nimble Receipt - Starbank Market Pickup - Order #${orderNumberCustom}`,
-        message: `Hello ${userEmailName},\nThanks for using Nimble Curbside Pickup at Fulton Market! Your digital receipt for today's pickup is attached below.
+        message: `Hello ${userEmailName},\nThanks for using Nimble Curbside Pickup at Starbank Market! Your digital receipt for today's pickup is attached below.
         \nWe hope your pickup experience was smooth. Next time, try our in-store snap & go feature to skip the waiting entirely.
         \n Questions? Our team is here at help@nimble.com \n
         \n Happy shopping! \n
@@ -257,6 +256,82 @@ router.post("/postPayment", async (req, res) => {
 
       res.status(200).json({
         success: true,
+        orderNumber:orderNumberCustom,
+        userSpecificOrderCreatedObj,
+        message: `Please check your email: ${user.email} for the invoice`,
+      });
+
+    } catch (error) {
+      console.log("Error sending email or creating order", error);
+      res.status(500).json({
+        error: 'Internal Server Error',
+      });
+    }
+
+  } catch (error) {
+    console.log("Error in payment processing", error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+    });
+  }
+});
+
+router.post("/snpPostPayment", async (req, res) => {
+  try {
+    console.log("Call reached backend---SNP", req.body);
+
+    const { user, cart, shippingAddress, totalPrice, paymentInfo, selectedCollectionTime, isPremium } = req.body;
+    console.log("Data received in payment route---->", user, cart);
+
+    let userName = user.email.split(".")[0];
+    let userEmailName = userName.charAt(0).toUpperCase() + userName.slice(1);
+    let generatedOrderId=await generateOrderId(user.email,getCurrentDate());
+    let orderNumberCustom=await generateOrderNumber(getCurrentDate(),generatedOrderId);
+
+    await generatePDF(cart,userEmailName,orderNumberCustom);
+
+    try {
+      await sendMailWithFiles({
+        email: user.email,
+        subject: `Your Nimble Receipt - Starbank Market - Order #${orderNumberCustom}`,
+        message: `Hello ${userEmailName},\nThanks for using Nimble at Starbank Market! Your digital receipt for today's purchase is attached below.
+        \nNext time, remember you can skip the line by simply snapping photos of your items as you shop.
+        \n Questions? Our team is here at help@nimble.com \n
+        \n Happy shopping! \n
+        \n The Nimble Team \n
+        \n --------------- \n
+        \n Order #${orderNumberCustom} \n
+        \n Store: Starbank Market \n
+        \n This is an automated message.`,
+        filePath: 'invoice.pdf'
+      });
+
+      const mockReq = {
+        body: {
+          cart,
+          shippingAddress,
+          user,
+          totalPrice,
+          paymentInfo,
+          selectedCollectionTime,
+          orderNumberCustom,
+          isPremium,
+        }
+      };
+
+
+      const userSpecificOrderCreatedObj = await createOrder(mockReq, (err) => {
+        if (err) {
+          console.log('Error during order creation:', err);
+          return res.status(500).json({
+            error: 'Error during order creation',
+          });
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        orderNumber:orderNumberCustom,
         userSpecificOrderCreatedObj,
         message: `Please check your email: ${user.email} for the invoice`,
       });
