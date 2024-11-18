@@ -224,6 +224,7 @@ router.post("/postPayment", async (req, res) => {
           totalPrice,
           paymentInfo,
           selectedCollectionTime,
+          orderNumberCustom,
           isPremium,
         }
       };
