@@ -13,15 +13,31 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter your product description!"],
   },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
+  },
   category: {
     type: String,
     required: [true, "Please enter your product category!"],
+  },
+  subCategory: {
+    type: String,
+  },
+  brand: {
+    type: String,
+    required: [true, "Please enter your product brand!"],
   },
   tags: {
     type: String,
   },
   barCodeContent: {
     type: String,
+  },
+  cost: {
+    type: Number,
+    required: [true, "Please enter your product cost!"],
   },
   originalPrice: {
     type: Number,
@@ -34,15 +50,24 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: [true, "Please enter your product stock!"],
   },
+  weight: {
+    type: Number
+  },
+  taxCode: {
+    type: String
+  },
+  expiration: {
+    type: Date
+  },
   images: [
     {
       public_id: {
         type: String,
-        required: true,
+        required: false,
       },
       url: {
         type: String,
-        required: true,
+        required: false,
       },
     },
   ],
@@ -80,11 +105,9 @@ const productSchema = new mongoose.Schema({
   sold_out: {
     type: Number,
     default: 0,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
+  }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model("Product", productSchema);
